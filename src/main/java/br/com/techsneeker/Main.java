@@ -1,6 +1,7 @@
 package br.com.techsneeker;
 
 import br.com.techsneeker.envs.Environment;
+import br.com.techsneeker.listeners.TranslationCommand;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -11,9 +12,15 @@ public class Main {
 
         Environment variables = new Environment();
 
-        JDA jda = JDABuilder.createDefault(variables.getDiscordToken())
+        JDA utilsRobot = JDABuilder.createDefault(variables.getDiscordToken()) // Start robot
                 .enableIntents(GatewayIntent.MESSAGE_CONTENT)
-                .addEventListeners()
                 .build();
+
+        TranslationCommand translation = new TranslationCommand();
+
+        utilsRobot.addEventListener(translation); // Add events
+
+        utilsRobot.upsertCommand("translate", "Translate texts") // Create command
+                .addOptions(translation.getOptions()).queue();
     }
 }
