@@ -1,5 +1,6 @@
 package br.com.techsneeker.listeners;
 
+import br.com.techsneeker.requests.YandexApi;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
@@ -18,8 +19,9 @@ public class TranslationCommand extends ListenerAdapter {
 
             String lang = event.getOption("lang").getAsString();
             String text = event.getOption("text").getAsString();
+            String response = YandexApi.doTranslation(lang, text);
 
-            event.getHook().editOriginal("response here!").queue();
+            event.getHook().editOriginal(response).queue();
         }
     }
 
