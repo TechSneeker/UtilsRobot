@@ -1,19 +1,11 @@
 package br.com.techsneeker.listeners;
 
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.Channel;
-import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,17 +13,21 @@ import java.util.stream.Collectors;
 
 public class LotteryCommand extends ListenerAdapter {
 
-    @Override
+    private static final String resultAnwser = "\uD83C\uDF89\tCongratulations <mention>! You're the winner\t\uD83C\uDF89";
+
+    @Override // this event will bring an instant result
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("lottery")) {
             event.deferReply().queue();
 
             String textContent = event.getOption("participants").getAsString();
-            List<User> participants = extractMentionedUsers(textContent, event);
+            List<User> participants = this.extractMentionedUsers(textContent, event);
 
             User winner = this.getRandomUser(participants);
+            String mention = String.format("<@%s>", winner.getId());
+            String result = resultAnwser.replace("<mention>", mention);
 
-            event.getHook().editOriginal(winner.getName()).queue();
+            event.getHook().editOriginal(result).queue();
         }
     }
 

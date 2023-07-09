@@ -3,10 +3,10 @@ package br.com.techsneeker;
 import br.com.techsneeker.envs.Environment;
 import br.com.techsneeker.listeners.LotteryCommand;
 import br.com.techsneeker.listeners.TranslationCommand;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 public class Main {
