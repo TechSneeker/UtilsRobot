@@ -15,7 +15,7 @@ public class LotteryCommand extends ListenerAdapter {
 
     private static final String resultAnwser = "\uD83C\uDF89\tCongratulations <mention>! You're the winner\t\uD83C\uDF89";
 
-    @Override // this event will bring an instant result
+    @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("lottery")) {
             event.deferReply().queue();
