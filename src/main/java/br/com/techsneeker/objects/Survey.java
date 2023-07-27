@@ -1,14 +1,13 @@
 package br.com.techsneeker.objects;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class Survey {
 
-    private UUID id;
-    private String owner;
-    private Map<String, Integer> vote;
+    private final UUID id;
+    private final String owner;
+    private final Map<String, Integer> vote;
+    private final Set<String> voters = new HashSet<>();
 
     public Survey(UUID id, String owner, Map<String, Integer> vote) {
         this.id = id;
@@ -31,6 +30,14 @@ public class Survey {
     public void addVote(String key) {
         Integer currentValue = vote.get(key);
         vote.put(key, currentValue + 1);
+    }
+
+    public void addVoter(String userId) {
+        voters.add(userId);
+    }
+
+    public boolean hasVoted(String userId) {
+        return voters.contains(userId);
     }
 
     public static Survey fromListById(List<Survey> values, UUID id) {

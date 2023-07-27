@@ -1,6 +1,7 @@
 package br.com.techsneeker.listeners;
 
 import br.com.techsneeker.objects.Survey;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -44,11 +45,20 @@ public class SurveyCommand extends ListenerAdapter {
 
     @Override
     public void onStringSelectInteraction(StringSelectInteractionEvent event) {
+        final User user = event.getUser();
         final String componentId = event.getInteraction().getComponentId();
-        final Survey surveyFound = Survey.fromListById(surveyRegistered, UUID.fromString(componentId));
         final String optSelected = event.getSelectedOptions().get(0).getValue();
+        final Survey surveyFound = Survey.fromListById(surveyRegistered, UUID.fromString(componentId));
 
+        if (surveyFound.hasVoted(user.getId())) {
+            event.reply("You have already voted!").setEphemeral(true).queue();
+            return;
+        }
+
+        surveyFound.addVoter(user.getId());
         surveyFound.addVote(optSelected);
+
+        event.reply(String.format("You voted for %s!", optSelected)).setEphemeral(true).queue();
     }
 
     private List<String> extractChoicesBySurvey(String value) {
@@ -74,7 +84,7 @@ public class SurveyCommand extends ListenerAdapter {
     private Survey createSurvey(UUID id, String owner, List<SelectOption> options) {
         Map<String, Integer> votes = new HashMap<>();
 
-        options.stream().forEach(option -> {
+        options.forEach(option -> {
             votes.put(option.getValue(), 0);
         });
 
