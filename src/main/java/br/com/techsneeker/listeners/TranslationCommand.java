@@ -28,14 +28,15 @@ public class TranslationCommand extends ListenerAdapter {
     public List<OptionData> getOptions() {
         return Arrays.asList(
                 new OptionData(OptionType.STRING, "lang", "Lang")
-                        .addChoices(this.getLanguages()).setRequired(true),
+                        .addChoices(this.getLanguages())
+                        .setRequired(true),
 
                 new OptionData(OptionType.STRING, "text", "Say me something")
                         .setRequired(true)
         );
     }
 
-    public List<Command.Choice> getLanguages() {
+    private List<Command.Choice> getLanguages() {
         return Arrays.asList(
                 new Command.Choice("PT-EN", "pt-en")
         );

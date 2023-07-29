@@ -36,8 +36,7 @@ public class Main {
 
         utilsRobot.addEventListener(survey);
         utilsRobot.upsertCommand("survey", "Ask something")
-                .addOption(OptionType.STRING, "question", "survey question", true)
-                .addOption(OptionType.STRING, "choices", "survey choices", true)
+                .addOptions(survey.getOptions())
                 .queue();
 
     }

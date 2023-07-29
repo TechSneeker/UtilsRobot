@@ -9,8 +9,8 @@ public class Survey {
     private final Map<String, Integer> vote;
     private final Set<String> voters = new HashSet<>();
 
-    public Survey(UUID id, String owner, Map<String, Integer> vote) {
-        this.id = id;
+    public Survey(String id, String owner, Map<String, Integer> vote) {
+        this.id = UUID.fromString(id);
         this.owner = owner;
         this.vote = vote;
     }
