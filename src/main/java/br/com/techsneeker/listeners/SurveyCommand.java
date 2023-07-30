@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class SurveyCommand extends ListenerAdapter {
 
-    List<Survey> surveyRegistered = new ArrayList<>();
+    final List<Survey> surveyRegistered = new ArrayList<>();
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
@@ -49,8 +49,11 @@ public class SurveyCommand extends ListenerAdapter {
 
             event.getHook().sendMessage(builder.build()).queue((message) -> {
                 surveyRegistered.add(this.createSurvey(selectId, owner, options));
+
                 channel.editMessageById(message.getId(), this.createClosedSelect(builder, selectMenu))
-                        .queueAfter(durationInserted, TimeUnit.valueOf(unitInserted));
+                        .queueAfter(durationInserted, TimeUnit.valueOf(unitInserted), (sucess) -> {
+                            Survey.removeFromListById(surveyRegistered, selectId);
+                        });
             });
 
         }
@@ -61,7 +64,7 @@ public class SurveyCommand extends ListenerAdapter {
         final User user = event.getUser();
         final String componentId = event.getInteraction().getComponentId();
         final String optSelected = event.getSelectedOptions().get(0).getValue();
-        final Survey surveyFound = Survey.fromListById(surveyRegistered, UUID.fromString(componentId));
+        final Survey surveyFound = Survey.getFromListById(surveyRegistered, UUID.fromString(componentId));
 
         if (surveyFound.hasVoted(user.getId())) {
             event.reply("You have already voted!").setEphemeral(true).queue();

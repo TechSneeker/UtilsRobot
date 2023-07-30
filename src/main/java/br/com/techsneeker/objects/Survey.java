@@ -40,8 +40,12 @@ public class Survey {
         return voters.contains(userId);
     }
 
-    public static Survey fromListById(List<Survey> values, UUID id) {
+    public static Survey getFromListById(List<Survey> values, UUID id) {
         return values.stream().filter(survey -> survey.getId().equals(id)).findAny().get();
+    }
+
+    public static void removeFromListById(List<Survey> values, String id) {
+        values.removeIf(survey -> survey.getId().equals(UUID.fromString(id)));
     }
 
 }
