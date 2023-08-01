@@ -32,6 +32,10 @@ public class Survey {
         vote.put(key, currentValue + 1);
     }
 
+    public int getVoterCount() {
+        return vote.values().stream().mapToInt(Integer::intValue).sum();
+    }
+
     public void addVoter(String userId) {
         voters.add(userId);
     }

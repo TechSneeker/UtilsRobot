@@ -1,6 +1,8 @@
 package br.com.techsneeker.listeners;
 
 import br.com.techsneeker.objects.Survey;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -9,11 +11,13 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.selections.*;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
-import net.dv8tion.jda.api.utils.messages.MessageEditData;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,17 +47,27 @@ public class SurveyCommand extends ListenerAdapter {
                     .addOptions(options)
                     .build();
 
+            EmbedBuilder embed = new EmbedBuilder();
+
+            for (SelectOption option : options) {
+                String defaultProgressBar = String.format("`%s` 0 - 0", "⬛".repeat(10)) + "%";
+                embed.addField(option.getValue(), defaultProgressBar, false);
+            }
+
+            embed.setTitle(questionInserted).setColor(Color.decode("#FFFF00"));
+
             MessageCreateBuilder builder = new MessageCreateBuilder()
-                    .addContent(questionInserted)
+                    .addEmbeds(embed.build())
                     .addActionRow(selectMenu);
+
+            ActionRow actionRow = ActionRow.of(selectMenu.asDisabled());
 
             event.getHook().sendMessage(builder.build()).queue((message) -> {
                 surveyRegistered.add(this.createSurvey(selectId, owner, options));
 
-                channel.editMessageById(message.getId(), this.createClosedSelect(builder, selectMenu))
-                        .queueAfter(durationInserted, TimeUnit.valueOf(unitInserted), (sucess) -> {
+                channel.editMessageComponentsById(message.getId(), actionRow).queueAfter(durationInserted, TimeUnit.valueOf(unitInserted), (sucess) -> {
                             Survey.removeFromListById(surveyRegistered, selectId);
-                        });
+                });
             });
 
         }
@@ -65,6 +79,7 @@ public class SurveyCommand extends ListenerAdapter {
         final String componentId = event.getInteraction().getComponentId();
         final String optSelected = event.getSelectedOptions().get(0).getValue();
         final Survey surveyFound = Survey.getFromListById(surveyRegistered, UUID.fromString(componentId));
+        final List<MessageEmbed.Field> fields = event.getMessage().getEmbeds().get(0).getFields();
 
         if (surveyFound.hasVoted(user.getId())) {
             event.reply("You have already voted!").setEphemeral(true).queue();
@@ -74,6 +89,25 @@ public class SurveyCommand extends ListenerAdapter {
         surveyFound.addVoter(user.getId());
         surveyFound.addVote(optSelected);
 
+        List<MessageEmbed.Field> newFields = new ArrayList<>();
+
+        for (MessageEmbed.Field field : fields) {
+            String fieldName = field.getName();
+            int total = surveyFound.getVoterCount();
+            int count = surveyFound.getVote().get(fieldName);
+            double percentage = (double) count / total * 100;
+
+            newFields.add(this.createUpdatedField(fieldName, count, percentage));
+        }
+
+        String id = event.getMessageId();
+        MessageChannel channel = event.getChannel();
+        MessageEmbed embed = event.getMessage().getEmbeds().get(0);
+        EmbedBuilder builder = EmbedBuilder.fromData(embed.toData()).clearFields();
+
+        newFields.forEach(builder::addField);
+
+        channel.editMessageEmbedsById(id, builder.build()).queue();
         event.reply(String.format("You voted for %s!", optSelected)).setEphemeral(true).queue();
     }
 
@@ -107,11 +141,20 @@ public class SurveyCommand extends ListenerAdapter {
         return new Survey(id, owner, votes);
     }
 
-    private MessageEditData createClosedSelect(MessageCreateBuilder builder, StringSelectMenu select) {
-        return MessageEditData.fromCreateData(builder
-                .setComponents()
-                .addActionRow(select.asDisabled())
-                .build());
+    private MessageEmbed.Field createUpdatedField(String fieldName, int count, double percentage) {
+        String progressBar = this.createProgressBar(count, percentage);
+        return new MessageEmbed.Field(fieldName, progressBar, false);
+    }
+
+    private String createProgressBar(int count, double percentage) {
+        final int totalSquares = 10;
+        final int greenSquareCount = (int) Math.min(Math.round(percentage / 10), 10);
+        final int blackSquareCount = totalSquares - greenSquareCount;
+
+        String countAndPorcent = String.format(" %d - %.1f", count, percentage) + "%";
+        String progressBar = "\uD83D\uDFE9".repeat(greenSquareCount) + "⬛".repeat(blackSquareCount);
+
+        return String.format("`%s`", progressBar) + countAndPorcent;
     }
 
     public List<OptionData> getOptions() {
