@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.selections.*;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 import java.awt.*;
 import java.util.*;
@@ -32,7 +33,7 @@ public class SurveyCommand extends ListenerAdapter {
         if (event.getName().equals("survey")) {
             event.deferReply().queue();
 
-            final String owner = event.getUser().getName();
+            final String owner = event.getUser().getEffectiveName();
             final String selectId = this.generateRandomId();
             final MessageChannel channel = event.getChannel();
             final String unitInserted = Objects.requireNonNull(event.getOption("unit")).getAsString();
@@ -54,7 +55,12 @@ public class SurveyCommand extends ListenerAdapter {
                 embed.addField(option.getValue(), defaultProgressBar, false);
             }
 
-            embed.setTitle(questionInserted).setColor(Color.decode("#FFFF00"));
+            String iconTimer = "https://cdn.discordapp.com/attachments/1125956410904166471/1136103838290554880/image.png";
+            String footer = "Ends in " + durationInserted + " " + StringUtils.capitalize(unitInserted.toLowerCase());
+
+            embed.setTitle(questionInserted)
+                    .setColor(Color.decode("#FFFF00"))
+                    .setFooter(footer, iconTimer);
 
             MessageCreateBuilder builder = new MessageCreateBuilder()
                     .addEmbeds(embed.build())
@@ -65,7 +71,12 @@ public class SurveyCommand extends ListenerAdapter {
             event.getHook().sendMessage(builder.build()).queue((message) -> {
                 surveyRegistered.add(this.createSurvey(selectId, owner, options));
 
-                channel.editMessageComponentsById(message.getId(), actionRow).queueAfter(durationInserted, TimeUnit.valueOf(unitInserted), (sucess) -> {
+                channel.editMessageComponentsById(message.getId(), actionRow)
+                        .queueAfter(durationInserted, TimeUnit.valueOf(unitInserted), (sucess) -> {
+
+                            Survey survey = Survey.getFromListById(surveyRegistered, UUID.fromString(selectId));
+
+                            this.showSurveyResults(channel, survey);
                             Survey.removeFromListById(surveyRegistered, selectId);
                 });
             });
@@ -142,19 +153,52 @@ public class SurveyCommand extends ListenerAdapter {
     }
 
     private MessageEmbed.Field createUpdatedField(String fieldName, int count, double percentage) {
-        String progressBar = this.createProgressBar(count, percentage);
+        String progressBar = this.createProgressBar(count, percentage, true);
         return new MessageEmbed.Field(fieldName, progressBar, false);
     }
 
-    private String createProgressBar(int count, double percentage) {
+    private String createProgressBar(int count, double percentage, boolean withStats) {
         final int totalSquares = 10;
         final int greenSquareCount = (int) Math.min(Math.round(percentage / 10), 10);
         final int blackSquareCount = totalSquares - greenSquareCount;
 
         String countAndPorcent = String.format(" %d - %.1f", count, percentage) + "%";
         String progressBar = "\uD83D\uDFE9".repeat(greenSquareCount) + "⬛".repeat(blackSquareCount);
+        String result = String.format("`%s`", progressBar);
 
-        return String.format("`%s`", progressBar) + countAndPorcent;
+        return (withStats) ? result + countAndPorcent : result;
+    }
+
+    private void showSurveyResults(MessageChannel channel, Survey survey) {
+        List<MessageEmbed.Field> fields = new ArrayList<>();
+        int totalVotes = survey.getVoterCount();
+        Map<String, Integer> votesMap = survey.getVote();
+
+        for (String option : votesMap.keySet()) {
+            int voteCount = votesMap.getOrDefault(option, 0);
+            double percentage = (double) voteCount / totalVotes * 100;
+
+            String progressBar = this.createProgressBar(voteCount, percentage, false);
+            String formatterPorcentage = String.format("%.1f", percentage) + "%";
+            String fieldDescription = String.format("%s\t%s votes (%s)", progressBar, voteCount, formatterPorcentage);
+
+            fields.add(new MessageEmbed.Field(option, fieldDescription, false));
+        }
+
+        final String iconResult = "https://cdn.discordapp.com/attachments/1125956410904166471/1136097685452095519/image.png";
+
+        EmbedBuilder embed = new EmbedBuilder()
+                .setTitle("Survey Results")
+                .setColor(Color.decode("#00FF00"))
+                .setDescription("Here are the results of the survey:")
+                .setFooter("by " + survey.getOwner(), iconResult);
+
+
+        for (MessageEmbed.Field field : fields) {
+            embed.addField(field);
+        }
+
+        channel.sendMessageEmbeds(embed.build()).queue();
     }
 
     public List<OptionData> getOptions() {
