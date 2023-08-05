@@ -3,8 +3,11 @@ package br.com.techsneeker.listeners;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
@@ -48,5 +51,12 @@ public class LotteryCommand extends ListenerAdapter {
         return (!participants.isEmpty())
                 ? participants.get(ThreadLocalRandom.current().nextInt(participants.size()))
                 : null;
+    }
+
+    public List<OptionData> getOptions() {
+        return Arrays.asList(
+                new OptionData(OptionType.STRING, "participants", "who'll participate?")
+                        .setRequired(true)
+        );
     }
 }
