@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
@@ -54,7 +53,7 @@ public class LotteryCommand extends ListenerAdapter {
     }
 
     public List<OptionData> getOptions() {
-        return Arrays.asList(
+        return List.of(
                 new OptionData(OptionType.STRING, "participants", "who'll participate?")
                         .setRequired(true)
         );

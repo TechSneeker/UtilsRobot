@@ -1,8 +1,11 @@
 package br.com.techsneeker.listeners;
 
+import br.com.techsneeker.Main;
 import br.com.techsneeker.objects.Survey;
+import br.com.techsneeker.utils.Utils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -10,7 +13,6 @@ import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionE
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.selections.*;
@@ -32,9 +34,13 @@ public class SurveyCommand extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("survey")) {
-            event.deferReply().queue();
 
-            System.out.println(event.getGuild().getId());
+            if (!hasPermission(event)) {
+                event.reply("Sorry, you dont have permission to use the survey command!").setEphemeral(true).queue();
+                return;
+            }
+
+            event.deferReply().queue();
 
             final String owner = event.getUser().getEffectiveName();
             final String selectId = this.generateRandomId();
@@ -196,12 +202,31 @@ public class SurveyCommand extends ListenerAdapter {
                 .setDescription("Here are the results of the survey:")
                 .setFooter("by " + survey.getOwner(), iconResult);
 
-
         for (MessageEmbed.Field field : fields) {
             embed.addField(field);
         }
 
         channel.sendMessageEmbeds(embed.build()).queue();
+    }
+
+    private boolean hasPermission(SlashCommandInteractionEvent event) {
+        final long guildId = Objects.requireNonNull(event.getGuild()).getIdLong();
+        final List<Role> userRoles = Objects.requireNonNull(event.getMember()).getRoles();
+
+        String requiredPermission = Main.getDatabaseInstance().getPermByid(guildId);
+
+        if (requiredPermission.equals("all"))
+            return true;
+
+        if (requiredPermission.equals("owner") && Utils.isOwner(event))
+            return true;
+
+        return userRoles.stream().anyMatch(role ->
+                role.getName().equalsIgnoreCase(requiredPermission));
+    }
+
+    private String generateRandomId() {
+        return UUID.randomUUID().toString();
     }
 
     public List<OptionData> getOptions() {
@@ -219,16 +244,12 @@ public class SurveyCommand extends ListenerAdapter {
     }
 
     private List<Command.Choice> getTimeUnitOptions() {
-        return Arrays.asList(
+        return List.of(
                 new Command.Choice("Seconds", "SECONDS"),
                 new Command.Choice("Minutes", "MINUTES"),
                 new Command.Choice("Hours", "HOURS"),
                 new Command.Choice("Days", "DAYS")
         );
-    }
-
-    private String generateRandomId() {
-        return UUID.randomUUID().toString();
     }
 
 }

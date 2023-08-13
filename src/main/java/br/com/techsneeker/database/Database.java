@@ -7,10 +7,15 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.sql.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class Database {
 
     private static HikariDataSource dataSource;
+    private static final ExecutorService executor = Executors.newFixedThreadPool(5);
 
     public Database() throws URISyntaxException {
         String path = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
@@ -35,8 +40,23 @@ public class Database {
             statement.execute(query);
             statement.close();
 
+            System.out.println("CRIOU A TABELA");
+
         } catch (SQLException e) {
            e.printStackTrace();
+        }
+    }
+
+    public void addPermConfiguration(long id, String value) {
+        try {
+            Future<Boolean> futureCheck = executor.submit(() -> this.checkIfExists(id));
+            boolean configExists = futureCheck.get();
+
+            if (!configExists) executor.submit(() -> this.insertPerm(id, value));
+            else executor.submit(() -> this.updatePermById(id, value));
+
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -59,7 +79,7 @@ public class Database {
         return false;
     }
 
-    public void insertConfig(long id, String value) {
+    public void insertPerm(long id, String value) {
         String query = "INSERT INTO perm_survey (id, perm) VALUES (?, ?)";
 
         try (Connection connection = dataSource.getConnection();
@@ -69,7 +89,6 @@ public class Database {
             preparedStatement.setString(2, value);
 
             preparedStatement.executeUpdate();
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -89,5 +108,24 @@ public class Database {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public String getPermByid(long id) {
+        String query = "SELECT perm FROM perm_survey WHERE id = ?";
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+
+            preparedStatement.setLong(1, id);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) return resultSet.getString("perm");
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }
