@@ -13,6 +13,9 @@ target/
 ### Environment Variables ###
 *.yml
 
+### Database files ###
+*.db
+
 ### STS ###
 .apt_generated
 .classpath
