@@ -1,6 +1,7 @@
 package br.com.techsneeker.listeners;
 
 import br.com.techsneeker.Main;
+import br.com.techsneeker.objects.CooldownManager;
 import br.com.techsneeker.objects.Survey;
 import br.com.techsneeker.utils.Utils;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -34,6 +35,12 @@ public class SurveyCommand extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("survey")) {
+
+            final long userId = event.getUser().getIdLong();
+
+            if (!CooldownManager.canUseSurveyCommand(userId, event)) {
+                return;
+            }
 
             if (!hasPermission(event)) {
                 event.reply("Sorry, you dont have permission to use the survey command!").setEphemeral(true).queue();
@@ -90,6 +97,7 @@ public class SurveyCommand extends ListenerAdapter {
                 });
             });
 
+            CooldownManager.addToSurveyCache(userId);
         }
     }
 
@@ -215,14 +223,11 @@ public class SurveyCommand extends ListenerAdapter {
 
         String requiredPermission = Main.getDatabaseInstance().getPermByid(guildId);
 
-        if (requiredPermission.equals("all"))
-            return true;
+        boolean hasRole = userRoles.stream()
+                .anyMatch(role -> role.getName().equalsIgnoreCase(requiredPermission));
 
-        if (requiredPermission.equals("owner") && Utils.isOwner(event))
-            return true;
-
-        return userRoles.stream().anyMatch(role ->
-                role.getName().equalsIgnoreCase(requiredPermission));
+        return requiredPermission.equals("all") || hasRole
+                || (requiredPermission.equals("owner") && Utils.isOwner(event));
     }
 
     private String generateRandomId() {

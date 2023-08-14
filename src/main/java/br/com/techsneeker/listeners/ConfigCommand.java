@@ -30,8 +30,6 @@ public class ConfigCommand extends ListenerAdapter {
 
             final long userId = event.getUser().getIdLong();
 
-            //TODO TESTAR ABAIXO
-
             if (!CooldownManager.canUsePermissionCommand(userId, event)) {
                 return;
             }
@@ -39,7 +37,7 @@ public class ConfigCommand extends ListenerAdapter {
             final long guildId = event.getGuild().getIdLong();
             final String optionSelected = event.getOption("permissions").getAsString();
 
-            CooldownManager.addToCache(userId);
+            CooldownManager.addToPermCache(userId);
 
             if (!optionSelected.equals("role")) {
                 Main.getDatabaseInstance().addPermConfiguration(guildId, optionSelected);
