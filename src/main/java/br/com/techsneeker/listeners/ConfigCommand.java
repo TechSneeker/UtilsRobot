@@ -5,6 +5,7 @@ import br.com.techsneeker.objects.CooldownManager;
 import br.com.techsneeker.utils.Utils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
@@ -13,11 +14,14 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 public class ConfigCommand extends ListenerAdapter {
+
+    private static final Logger logger = Logger.getLogger(ConfigCommand.class.getName());
 
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
@@ -28,7 +32,8 @@ public class ConfigCommand extends ListenerAdapter {
                 return;
             }
 
-            final long userId = event.getUser().getIdLong();
+            final User user = event.getUser();
+            final long userId = user.getIdLong();
 
             if (!CooldownManager.canUsePermissionCommand(userId, event)) {
                 return;
@@ -55,6 +60,7 @@ public class ConfigCommand extends ListenerAdapter {
                 Main.getDatabaseInstance().addPermConfiguration(guildId, role.getName());
             }
 
+            logger.info(String.format("%s atualizou as permissões pro survey na {guilda:%d}", user.getName(), guildId));
             event.reply("You have successfully set the permission!").setEphemeral(true).queue();
         }
     }

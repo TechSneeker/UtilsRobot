@@ -11,7 +11,11 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public class Main {
 
@@ -19,15 +23,23 @@ public class Main {
     private static Database db;
 
     static {
+
+        try (InputStream stream = Main.class.getClassLoader().getResourceAsStream("logging.properties")){
+            LogManager.getLogManager().readConfiguration(stream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         try {
             db = new Database();
             db.createTables();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
+
     }
 
-    public static void main(String[] args) throws URISyntaxException {
+    public static void main(String[] args) {
         Environment variables = new Environment();
 
         TranslationCommand translation = new TranslationCommand();
@@ -46,11 +58,8 @@ public class Main {
         utilsRobot.upsertCommand("survey-permissions", "Choose usage permissions").addOptions(config.getOptions()).queue();
     }
 
-    public static JDA getJdaInstance() {
-        return utilsRobot;
-    }
-
     public static Database getDatabaseInstance() {
         return db;
     }
+
 }

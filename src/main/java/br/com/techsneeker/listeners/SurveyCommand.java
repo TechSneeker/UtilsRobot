@@ -2,8 +2,10 @@ package br.com.techsneeker.listeners;
 
 import br.com.techsneeker.Main;
 import br.com.techsneeker.objects.CooldownManager;
+import br.com.techsneeker.assets.Icons;
 import br.com.techsneeker.objects.Survey;
 import br.com.techsneeker.utils.Utils;
+
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
@@ -18,9 +20,10 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.selections.*;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
-import org.apache.commons.lang3.StringUtils;
 
+import org.apache.commons.lang3.StringUtils;
 import java.awt.*;
+
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -71,12 +74,11 @@ public class SurveyCommand extends ListenerAdapter {
                 embed.addField(option.getValue(), defaultProgressBar, false);
             }
 
-            String iconTimer = "https://cdn.discordapp.com/attachments/1125956410904166471/1136103838290554880/image.png";
             String footer = "Ends in " + durationInserted + " " + StringUtils.capitalize(unitInserted.toLowerCase());
 
             embed.setTitle(questionInserted)
                     .setColor(Color.decode("#FFFF00"))
-                    .setFooter(footer, iconTimer);
+                    .setFooter(footer, Icons.TIMER);
 
             MessageCreateBuilder builder = new MessageCreateBuilder()
                     .addEmbeds(embed.build())
@@ -202,13 +204,11 @@ public class SurveyCommand extends ListenerAdapter {
             fields.add(new MessageEmbed.Field(option, fieldDescription, false));
         }
 
-        final String iconResult = "https://cdn.discordapp.com/attachments/1125956410904166471/1136097685452095519/image.png";
-
         EmbedBuilder embed = new EmbedBuilder()
                 .setTitle("Survey Results")
                 .setColor(Color.decode("#00FF00"))
                 .setDescription("Here are the results of the survey:")
-                .setFooter("by " + survey.getOwner(), iconResult);
+                .setFooter("by " + survey.getOwner(), Icons.RESULT);
 
         for (MessageEmbed.Field field : fields) {
             embed.addField(field);

@@ -11,11 +11,13 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.logging.Logger;
 
 public class Database {
 
     private static HikariDataSource dataSource;
     private static final ExecutorService executor = Executors.newFixedThreadPool(5);
+    private static final Logger logger = Logger.getLogger(Database.class.getName());
 
     public Database() throws URISyntaxException {
         String path = Main.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
@@ -40,10 +42,8 @@ public class Database {
             statement.execute(query);
             statement.close();
 
-            System.out.println("CRIOU A TABELA");
-
         } catch (SQLException e) {
-           e.printStackTrace();
+           logger.severe("DATABASE - Exception thrown trying to create table: " + e + ";");
         }
     }
 
@@ -56,7 +56,7 @@ public class Database {
             else executor.submit(() -> this.updatePermById(id, value));
 
         } catch (ExecutionException | InterruptedException e) {
-            e.printStackTrace();
+            logger.severe("DATABASE - Exception thrown trying to add/update survey configuration: " + e + ";");
         }
     }
 
@@ -73,7 +73,7 @@ public class Database {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.severe("DATABASE - Exception thrown trying to check survey configuration: " + e + ";");
         }
 
         return false;
@@ -90,7 +90,7 @@ public class Database {
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.severe("DATABASE - Exception thrown trying to insert survey configuration: " + e + ";");
         }
     }
 
@@ -106,7 +106,7 @@ public class Database {
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.severe("DATABASE - Exception thrown trying to update survey configuration: " + e + ";");
         }
     }
 
@@ -123,7 +123,7 @@ public class Database {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.severe("DATABASE - Exception thrown trying to select survey configuration: " + e + ";");
         }
 
         return null;
