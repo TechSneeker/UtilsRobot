@@ -15,13 +15,13 @@ public class TranslationCommand extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
         if (event.getName().equals("translate")) {
-            event.deferReply().queue();
+            event.reply("Coming soon.. :)").setEphemeral(true).queue();
 
-            String lang = event.getOption("lang").getAsString();
-            String text = event.getOption("text").getAsString();
-            String response = YandexApi.doTranslation(lang, text);
-
-            event.getHook().editOriginal(response).queue();
+//            String lang = event.getOption("lang").getAsString();
+//            String text = event.getOption("text").getAsString();
+//            String response = YandexApi.doTranslation(lang, text);
+//
+//            event.getHook().editOriginal(response).queue();
         }
     }
 

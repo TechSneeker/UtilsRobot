@@ -126,6 +126,6 @@ public class Database {
             logger.severe("DATABASE - Exception thrown trying to select survey configuration: " + e + ";");
         }
 
-        return null;
+        return "all";
     }
 }
