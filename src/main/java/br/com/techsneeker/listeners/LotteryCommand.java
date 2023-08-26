@@ -1,5 +1,6 @@
 package br.com.techsneeker.listeners;
 
+import br.com.techsneeker.objects.Description;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -54,7 +55,7 @@ public class LotteryCommand extends ListenerAdapter {
 
     public List<OptionData> getOptions() {
         return List.of(
-                new OptionData(OptionType.STRING, "participants", "who'll participate?")
+                new OptionData(OptionType.STRING, "participants", Description.LOTTERY_PARTICIPANTS)
                         .setRequired(true)
         );
     }

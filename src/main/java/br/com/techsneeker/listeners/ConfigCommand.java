@@ -2,6 +2,7 @@ package br.com.techsneeker.listeners;
 
 import br.com.techsneeker.Main;
 import br.com.techsneeker.objects.CooldownManager;
+import br.com.techsneeker.objects.Description;
 import br.com.techsneeker.utils.Utils;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
@@ -82,10 +83,10 @@ public class ConfigCommand extends ListenerAdapter {
 
     public List<OptionData> getOptions() {
         return List.of(
-                new OptionData(OptionType.STRING, "permissions", "who'll use the survey command?")
+                new OptionData(OptionType.STRING, "permissions", Description.PERMISSIONS)
                         .addChoices(this.getPermissionOptions())
                         .setRequired(true),
-                new OptionData(OptionType.STRING, "role", "Choose the role we should allow!")
+                new OptionData(OptionType.STRING, "role", Description.PERMISSIONS_ROLE)
         );
     }
 

@@ -3,6 +3,7 @@ package br.com.techsneeker.listeners;
 import br.com.techsneeker.Main;
 import br.com.techsneeker.objects.CooldownManager;
 import br.com.techsneeker.assets.Icons;
+import br.com.techsneeker.objects.Description;
 import br.com.techsneeker.objects.Survey;
 import br.com.techsneeker.utils.Utils;
 
@@ -236,14 +237,14 @@ public class SurveyCommand extends ListenerAdapter {
 
     public List<OptionData> getOptions() {
         return Arrays.asList(
-                new OptionData(OptionType.STRING, "question", "survey question")
+                new OptionData(OptionType.STRING, "question", "Ask something!")
                         .setRequired(true),
-                new OptionData(OptionType.STRING, "choices", "survey choices")
+                new OptionData(OptionType.STRING, "choices", Description.SURVEY_CHOICES)
                         .setRequired(true),
-                new OptionData(OptionType.STRING, "unit", "unit of duration")
+                new OptionData(OptionType.STRING, "unit", Description.SURVEY_UNIT)
                         .addChoices(this.getTimeUnitOptions())
                         .setRequired(true),
-                new OptionData(OptionType.STRING, "duration", "survey duration")
+                new OptionData(OptionType.STRING, "duration", Description.SURVEY_DURATION)
                         .setRequired(true)
         );
     }

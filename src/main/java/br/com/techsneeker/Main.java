@@ -54,7 +54,7 @@ public class Main {
         utilsRobot.upsertCommand("translate", "Translate texts").addOptions(translation.getOptions()).queue();
         utilsRobot.upsertCommand("lottery", "Choose one").addOptions(lottery.getOptions()).queue();
         utilsRobot.upsertCommand("survey-permissions", "Choose usage permissions").addOptions(config.getOptions()).queue();
-        utilsRobot.upsertCommand("survey", "Ask something").addOptions(survey.getOptions()).queue();
+        utilsRobot.upsertCommand("survey", "Do survey").addOptions(survey.getOptions()).queue();
     }
 
     public static Database getDatabaseInstance() {
